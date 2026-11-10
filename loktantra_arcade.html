@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LOKTANTRA ARCADE: The Aam Aadmi Survival Simulator</title>
+    <!-- Tailwind CSS for modern responsive utility layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ultra-readable modern display, digital, and high-contrast sans-serif fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Inter:wght@600;700;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brand-saffron: #f97316;
+            --brand-gold: #facc15;
+            --brand-green: #16a34a;
+            --brand-red: #dc2626;
+            --ink-black: #09090b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at 50% 12%, #1c1917 0%, #09090b 100%);
+            color: #ffffff;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+        }
+
+        .font-teko {
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        .font-digital {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+
+        /* Tactile physical arcade button press */
+        .arcade-btn {
+            transition: all 0.09s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 0 #000;
+        }
+        .arcade-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #000;
+        }
+
+        /* High-contrast portal cards with hover elevation */
+        .portal-card {
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .portal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px -8px rgba(245, 158, 11, 0.25);
+        }
+
+        /* Seamless ticker slide */
+        @keyframes ticker-slide {
+            0% { transform: translate3d(0%, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+        .ticker-track {
+            display: flex;
+            width: max-content;
+            animation: ticker-slide 55s linear infinite;
+        }
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        /* Rubber stamp slam animation */
+        @keyframes stamp-drop {
+            0% { transform: scale(2.8) rotate(-24deg); opacity: 0; }
+            65% { transform: scale(0.92) rotate(-5deg); opacity: 0.95; }
+            100% { transform: scale(1) rotate(-7deg); opacity: 0.98; }
+        }
+        .stamp-effect {
+            animation: stamp-drop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+
+        /* Subtle scanlines for broadcast/CRT atmosphere */
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 sm:p-4">
+
+    <!-- =========================================================================
+         TOP SARKAR & CITIZEN HUD (PENSION VAULT, STRESS METER, GLOBAL AUDIO)
+         ========================================================================= -->
+    <header class="w-full max-w-5xl mx-auto mb-3 bg-stone-900 border-2 border-amber-500 rounded-2xl p-3 sm:p-4 shadow-2xl flex flex-wrap items-center justify-between gap-3">
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-black text-black rounded-xl flex items-center justify-center text-3xl font-black shadow-md">
+                🏛️
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-teko text-2xl sm:text-3xl text-amber-400 tracking-wider leading-none">
+                        LOKTANTRA ARCADE
+                    </h1>
+                    <span class="text-xs bg-red-600 text-white font-black px-2 py-0.5 rounded uppercase border border-red-400 shadow">
+                        AAM AADMI SIMULATOR
+                    </span>
+                </div>
+                <p class="text-xs sm:text-sm text-stone-200 font-bold mt-0.5">
+                    Realistic Everyday Indian Political & Bureaucratic Survival
+                </p>
+            </div>
+        </div>
+
+        <!-- Global Dashboard Indicators -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <!-- Pension Fund / Savings -->
+            <div class="bg-black border-2 border-stone-700 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                <span class="text-amber-400 text-xl font-black">💰</span>
+                <div>
+                    <div class="text-[10px] text-stone-400 font-black tracking-wider uppercase">PENSION FUND</div>
+                    <div id="global-pension" class="font-digital text-sm sm:text-base text-yellow-300 font-bold">₹15,000</div>
+                </div>
+            </div>
+
+            <!-- Stress Meter -->
+            <div class="bg-black border-2 border-stone-700 px-3 py-1.5 rounded-xl flex flex-col min-w-[125px]">
+                <div class="flex justify-between text-xs font-black tracking-wide text-stone-200 mb-0.5">
+                    <span>STRESS</span>
+                    <span id="global-stress-text" class="text-emerald-400 font-black">15%</span>
+                </div>
+                <div class="w-full h-2.5 bg-stone-800 rounded-full overflow-hidden border border-stone-700">
+                    <div id="global-stress-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-red-500 transition-all duration-300" style="width: 15%"></div>
+                </div>
+            </div>
+
+            <!-- Global Sound Synthesizer Toggle -->
+            <button id="global-sound-btn" class="arcade-btn bg-stone-800 hover:bg-stone-700 text-white border-2 border-stone-500 px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5">
+                <span id="sound-icon">🔊</span>
+                <span id="sound-label" class="hidden sm:inline">SFX ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =========================================================================
+         MAIN APPLICATION VIEW CONTAINER
+         ========================================================================= -->
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center">
+
+        <!-- =====================================================================
+             VIEW 0: ARCADE PORTAL HUB
+             ===================================================================== -->
+        <section id="view-hub" class="w-full flex flex-col gap-4">
+            
+            <!-- Administrative Tier & Difficulty Selector -->
+            <div class="bg-stone-900 border-2 border-amber-400 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <span class="text-amber-400 font-digital text-xs tracking-widest uppercase block mb-1">
+                        SELECT ADMINISTRATIVE TIER & DIFFICULTY
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-black text-white">
+                        Choose Your Survival Level:
+                    </h2>
+                    <p class="text-xs sm:text-sm text-stone-300 mt-1">
+                        Higher tiers give tighter reaction windows, speedier clerks, and stricter vigilance scrutiny!
+                    </p>
+                </div>
+                <!-- 3 Level Switcher Buttons -->
+                <div class="flex items-center gap-1.5 bg-black p-1.5 rounded-xl border-2 border-stone-700 flex-wrap sm:flex-nowrap">
+                    <button id="btn-level-1" onclick="PortalManager.setLevel(1)" class="px-3 py-2 rounded-lg text-xs font-black tracking-wide transition-all bg-emerald-500 text-black shadow">
+                        LVL 1: GRAM PANCHAYAT
+                    </button>
+                    <button id="btn-level-2" onclick="PortalManager.setLevel(2)" class="px-3 py-2 rounded-lg text-xs font-black tracking-wide transition-all text-stone-300 hover:text-white">
+                        LVL 2: VIDHAN SABHA
+                    </button>
+                    <button id="btn-level-3" onclick="PortalManager.setLevel(3)" class="px-3 py-2 rounded-lg text-xs font-black tracking-wide transition-all text-stone-300 hover:text-white">
+                        LVL 3: LOK SABHA (HARD)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5 Arcade Mini-Game Selection Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- Game 1: Counter No. 4 -->
+                <div class="portal-card bg-stone-900 border-2 border-emerald-500 hover:border-emerald-400 rounded-2xl p-4 cursor-pointer flex flex-col justify-between shadow-2xl group" onclick="PortalManager.launch(1)">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-3xl">📂</span>
+                            <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500 px-2 py-0.5 rounded font-black tracking-wider uppercase">
+                                3 HEARTS • TIMED RUN
+                            </span>
+                        </div>
+                        <h3 class="font-teko text-2xl text-emerald-400 mb-1 leading-none group-hover:text-emerald-300">
+                            1. COUNTER NO. 4: FILE SPRINT
+                        </h3>
+                        <p class="text-xs sm:text-sm text-stone-200 font-semibold mb-3 leading-relaxed">
+                            Sprint across windows to get your form approved before the babu slams the "LUNCH TIME" placard! Dodge hot chai spills & flying pension files.
+                        </p>
+                    </div>
+                    <button class="arcade-btn w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm py-2.5 rounded-xl uppercase tracking-wider">
+                        CHASE THE BABU ▶
+                    </button>
+                </div>
+
+                <!-- Game 2: The Chai-Pani Slider -->
+                <div class="portal-card bg-stone-900 border-2 border-amber-500 hover:border-amber-400 rounded-2xl p-4 cursor-pointer flex flex-col justify-between shadow-2xl group" onclick="PortalManager.launch(2)">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-3xl">☕</span>
+                            <span class="text-xs bg-amber-950 text-amber-300 border border-amber-500 px-2 py-0.5 rounded font-black tracking-wider uppercase">
+                                3 ROUNDS • PRECISION GAUGE
+                            </span>
+                        </div>
+                        <h3 class="font-teko text-2xl text-amber-400 mb-1 leading-none group-hover:text-amber-300">
+                            2. THE CHAI-PANI BRIBE SLIDER
+                        </h3>
+                        <p class="text-xs sm:text-sm text-stone-200 font-semibold mb-3 leading-relaxed">
+                            Stop the oscillating needle in the green 'Chai-Pani' Sweet Spot. Underpay = Bulldozer FIR! Overpay = Sudden midnight ED/CBI Vigilance raid!
+                        </p>
+                    </div>
+                    <button class="arcade-btn w-full bg-amber-400 hover:bg-amber-300 text-black font-black text-sm py-2.5 rounded-xl uppercase tracking-wider">
+                        SLIP ENVELOPE ▶
+                    </button>
+                </div>
+
+                <!-- Game 3: Mandi & Freebie Inflation -->
+                <div class="portal-card bg-stone-900 border-2 border-red-500 hover:border-red-400 rounded-2xl p-4 cursor-pointer flex flex-col justify-between shadow-2xl group" onclick="PortalManager.launch(3)">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-3xl">🧺</span>
+                            <span class="text-xs bg-red-950 text-red-300 border border-red-500 px-2 py-0.5 rounded font-black tracking-wider uppercase">
+                                ₹1,500 BUDGET • STAPLE QUOTA
+                            </span>
+                        </div>
+                        <h3 class="font-teko text-2xl text-red-400 mb-1 leading-none group-hover:text-red-300">
+                            3. MANDI & FREEBIE INFLATION
+                        </h3>
+                        <p class="text-xs sm:text-sm text-stone-200 font-semibold mb-3 leading-relaxed">
+                            Catch 5 mandatory grocery staples & freebie mixies to feed the family! Avoid sudden cess surcharges and ₹200/kg onion shocks before budget hits ₹0.
+                        </p>
+                    </div>
+                    <button class="arcade-btn w-full bg-red-500 hover:bg-red-400 text-black font-black text-sm py-2.5 rounded-xl uppercase tracking-wider">
+                        BALANCE RATION ▶
+                    </button>
+                </div>
+
+                <!-- Game 4: Flyover Tender Derby -->
+                <div class="portal-card bg-stone-900 border-2 border-yellow-500 hover:border-yellow-400 rounded-2xl p-4 cursor-pointer flex flex-col justify-between shadow-2xl group" onclick="PortalManager.launch(4)">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-3xl">🛵</span>
+                            <span class="text-xs bg-yellow-950 text-yellow-300 border border-yellow-500 px-2 py-0.5 rounded font-black tracking-wider uppercase">
+                                3 VEHICLE HEARTS • 500M RUN
+                            </span>
+                        </div>
+                        <h3 class="font-teko text-2xl text-yellow-400 mb-1 leading-none group-hover:text-yellow-300">
+                            4. FLYOVER TENDER DERBY
+                        </h3>
+                        <p class="text-xs sm:text-sm text-stone-200 font-semibold mb-3 leading-relaxed">
+                            Ride your scooter on a newly inaugurated flyover! Watch red telegraphed warning arrows to dodge artisanal craters, cows, and barricades.
+                        </p>
+                    </div>
+                    <button class="arcade-btn w-full bg-yellow-400 hover:bg-yellow-300 text-black font-black text-sm py-2.5 rounded-xl uppercase tracking-wider">
+                        SURF POTHOLES ▶
+                    </button>
+                </div>
+
+                <!-- Game 5: Tatkal & OTP Panic -->
+                <div class="portal-card bg-stone-900 border-2 border-cyan-500 hover:border-cyan-400 rounded-2xl p-4 cursor-pointer flex flex-col justify-between shadow-2xl group sm:col-span-2 lg:col-span-2" onclick="PortalManager.launch(5)">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-3xl">⚡</span>
+                            <span class="text-xs bg-cyan-950 text-cyan-300 border border-cyan-500 px-2 py-0.5 rounded font-black tracking-wider uppercase">
+                                10:00 AM RUSH • QTE REACTION
+                            </span>
+                        </div>
+                        <h3 class="font-teko text-2xl text-cyan-400 mb-1 leading-none group-hover:text-cyan-300">
+                            5. TATKAL & AADHAAR OTP PANIC
+                        </h3>
+                        <p class="text-xs sm:text-sm text-stone-200 font-semibold mb-3 leading-relaxed">
+                            Race against the 10:00:15 AM server crash! Solve a high-contrast satirical CAPTCHA, catch the incoming simulated SMS OTP, and book before Error 504.
+                        </p>
+                    </div>
+                    <button class="arcade-btn w-full bg-cyan-400 hover:bg-cyan-300 text-black font-black text-sm py-2.5 rounded-xl uppercase tracking-wider">
+                        BEAT THE CLOCK ▶
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Citizen Badges Shelf -->
+            <div class="bg-black border-2 border-stone-700 rounded-2xl p-3 sm:p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-black text-amber-400 uppercase tracking-wider">
+                        🎖️ UNLOCKED AAM AADMI TITLES
+                    </span>
+                    <span id="badge-count" class="text-xs text-stone-300 font-bold">0 / 5 Unlocked</span>
+                </div>
+                <div id="badge-container" class="flex flex-wrap gap-2">
+                    <!-- Badges injected dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             VIEW 1: MINI-GAME 1 - "COUNTER NO. 4" (THE FILE SPRINT)
+             ===================================================================== -->
+        <section id="view-game1" class="hidden w-full flex flex-col items-center">
+            <div class="w-full bg-stone-900 border-2 border-emerald-500 rounded-2xl p-3 sm:p-4 shadow-2xl relative">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <button onclick="PortalManager.returnToHub()" class="arcade-btn bg-black hover:bg-stone-800 text-white border border-stone-600 px-3 py-1.5 rounded-xl text-xs font-black">
+                            ◀ PORTAL
+                        </button>
+                        <h2 class="font-teko text-2xl text-emerald-400 leading-none">COUNTER NO. 4: FILE SPRINT</h2>
+                        <span id="g1-level-badge" class="bg-emerald-950 text-emerald-300 border border-emerald-500 font-black px-2 py-0.5 rounded text-xs">
+                            LVL 1
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs sm:text-sm font-black">
+                        <!-- Hearts -->
+                        <div class="bg-black px-3 py-1 rounded-xl border border-stone-700 flex items-center gap-1">
+                            <span class="text-stone-300">HEALTH:</span>
+                            <span id="g1-hearts" class="text-red-500 text-base">❤️❤️❤️</span>
+                        </div>
+                        <div class="bg-black px-3 py-1 rounded-xl border border-stone-700 text-stone-100">
+                            STAMPS: <span id="g1-stamps" class="text-emerald-400 font-black">0 / 3</span>
+                        </div>
+                        <div class="bg-red-950 text-red-200 px-3 py-1 rounded-xl border border-red-600">
+                            LUNCH IN: <span id="g1-timer" class="font-digital text-yellow-300 font-bold">35</span>s
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clerk's Guidance Callout -->
+                <div class="w-full bg-black border-2 border-emerald-400 rounded-xl p-2.5 mb-2 text-center text-sm font-bold">
+                    <span class="text-amber-400 font-black">BABU NOTICE:</span>
+                    <span id="g1-dialogue" class="text-white ml-1">"Babu is eating samosa! Run to Counter 2 with Netaji's recommendation letter!"</span>
+                </div>
+
+                <!-- Canvas -->
+                <div class="relative w-full aspect-[16/9] max-h-[55vh] bg-stone-950 rounded-xl overflow-hidden border-2 border-stone-700">
+                    <canvas id="g1-canvas" class="w-full h-full block"></canvas>
+                    <div class="scanlines absolute inset-0"></div>
+                </div>
+
+                <!-- Touch / Keyboard Controls -->
+                <div class="flex items-center justify-between mt-3 text-xs sm:text-sm text-stone-200 font-bold">
+                    <span class="hidden sm:inline bg-black px-3 py-1.5 rounded-lg border border-stone-700">Controls: <kbd class="px-2 py-0.5 bg-stone-800 text-amber-300 rounded font-black">A / ←</kbd> and <kbd class="px-2 py-0.5 bg-stone-800 text-amber-300 rounded font-black">D / →</kbd> to sprint. Dodge chai spills!</span>
+                    <div class="flex sm:hidden gap-2 w-full justify-center">
+                        <button id="g1-btn-left" class="arcade-btn bg-emerald-600 text-black font-black px-6 py-2.5 rounded-xl text-base flex-1">◀ SPRINT LEFT</button>
+                        <button id="g1-btn-right" class="arcade-btn bg-emerald-600 text-black font-black px-6 py-2.5 rounded-xl text-base flex-1">SPRINT RIGHT ▶</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             VIEW 2: MINI-GAME 2 - "THE CHAI-PANI BRIBE SLIDER"
+             ===================================================================== -->
+        <section id="view-game2" class="hidden w-full flex flex-col items-center">
+            <div class="w-full bg-stone-900 border-2 border-amber-500 rounded-2xl p-4 sm:p-6 shadow-2xl relative max-w-2xl">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <button onclick="PortalManager.returnToHub()" class="arcade-btn bg-black hover:bg-stone-800 text-white border border-stone-600 px-3 py-1.5 rounded-xl text-xs font-black">
+                            ◀ PORTAL
+                        </button>
+                        <h2 class="font-teko text-2xl text-amber-400 leading-none">THE CHAI-PANI BRIBE SLIDER</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="g2-level-badge" class="bg-amber-950 text-amber-300 border border-amber-500 font-black px-2 py-0.5 rounded text-xs">
+                            LVL 1
+                        </span>
+                        <div class="text-xs sm:text-sm font-black bg-black px-3 py-1 rounded-xl border border-stone-700 text-white">
+                            ROUND: <span id="g2-round" class="text-amber-400">1 / 3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Official's Desk Card -->
+                <div class="bg-black rounded-xl p-4 border-2 border-stone-700 mb-4 text-center shadow-lg">
+                    <div class="text-6xl mb-1" id="g2-official-emoji">👮</div>
+                    <div id="g2-official-title" class="font-teko text-2xl text-amber-300 leading-tight">
+                        ROUND 1: TRAFFIC HAVALDAR AT NAKA
+                    </div>
+                    <p id="g2-official-quote" class="text-sm text-stone-200 font-bold max-w-md mx-auto">
+                        "Helmet belt is loose! Give ₹200 for chai-pani or your vehicle goes to the police compound!"
+                    </p>
+                </div>
+
+                <!-- Precision Gauge -->
+                <div class="mb-4">
+                    <div class="flex justify-between text-xs font-black mb-1.5">
+                        <span class="text-red-400 bg-black px-2 py-0.5 rounded border border-red-500">UNDERPAY (BULLDOZER/FIR)</span>
+                        <span class="text-emerald-300 bg-black px-2 py-0.5 rounded border border-emerald-500">CHAI-PANI SWEET SPOT</span>
+                        <span class="text-cyan-400 bg-black px-2 py-0.5 rounded border border-cyan-500">OVERPAY (ED / CBI RAID)</span>
+                    </div>
+                    <div class="relative w-full h-12 bg-black rounded-xl overflow-hidden border-2 border-stone-600 p-1">
+                        <!-- Sweet Spot Zone -->
+                        <div id="g2-sweet-spot" class="absolute top-1 bottom-1 bg-emerald-500 rounded border-2 border-white transition-all duration-150" style="left: 40%; width: 20%;"></div>
+                        <!-- Needle Pin -->
+                        <div id="g2-pin" class="absolute top-0 bottom-0 w-3.5 bg-yellow-300 border-2 border-black rounded shadow-2xl transform -translate-x-1/2" style="left: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- Bribe Action Button -->
+                <button id="g2-action-btn" class="arcade-btn w-full bg-amber-400 hover:bg-amber-300 text-black font-teko text-2xl py-3 rounded-xl uppercase tracking-wider mb-2">
+                    SLIP ENVELOPE (SPACE / TAP)
+                </button>
+                <p class="text-center text-xs text-stone-300 font-bold">
+                    Hit the green sweet spot! 3 clean settlements win the level. Underpaying or overpaying causes instant defeat!
+                </p>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             VIEW 3: MINI-GAME 3 - "MANDI & FREEBIE INFLATION"
+             ===================================================================== -->
+        <section id="view-game3" class="hidden w-full flex flex-col items-center">
+            <div class="w-full bg-stone-900 border-2 border-red-500 rounded-2xl p-3 sm:p-4 shadow-2xl relative">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <button onclick="PortalManager.returnToHub()" class="arcade-btn bg-black hover:bg-stone-800 text-white border border-stone-600 px-3 py-1.5 rounded-xl text-xs font-black">
+                            ◀ PORTAL
+                        </button>
+                        <h2 class="font-teko text-2xl text-red-400 leading-none">MANDI & FREEBIE INFLATION</h2>
+                        <span id="g3-level-badge" class="bg-red-950 text-red-300 border border-red-500 font-black px-2 py-0.5 rounded text-xs">
+                            LVL 1
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs sm:text-sm font-black">
+                        <div class="bg-black px-3 py-1 rounded-xl border border-stone-700 text-white">
+                            STAPLES CAUGHT: <span id="g3-staples" class="text-emerald-400 font-black">0 / 5</span>
+                        </div>
+                        <div class="bg-black px-3 py-1 rounded-xl border border-stone-700 text-white">
+                            BUDGET: <span id="g3-budget" class="text-yellow-400 font-black">₹1,500</span>
+                        </div>
+                        <div class="bg-red-950 text-red-200 px-3 py-1 rounded-xl border border-red-600">
+                            TIME LEFT: <span id="g3-timer" class="font-digital text-yellow-300 font-bold">28</span>s
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High-contrast instructions -->
+                <div class="w-full bg-black border-2 border-stone-700 rounded-xl px-3 py-1.5 mb-2 flex flex-wrap items-center justify-between text-xs font-bold gap-2">
+                    <span class="text-emerald-400">✅ CATCH: 🥔 Aloo, 🧅 Pyaaz, 🥫 Mustard Oil, & 📺 Freebie Mixies</span>
+                    <span class="text-red-400">❌ AVOID: 💸 Sudden GST Cess & 🍾 Dry-Day Fines (Depletes Budget to ₹0!)</span>
+                </div>
+
+                <!-- Canvas -->
+                <div class="relative w-full aspect-[16/9] max-h-[55vh] bg-stone-950 rounded-xl overflow-hidden border-2 border-stone-700">
+                    <canvas id="g3-canvas" class="w-full h-full block"></canvas>
+                    <div class="scanlines absolute inset-0"></div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-between mt-3 text-xs sm:text-sm text-stone-200 font-bold">
+                    <span class="hidden sm:inline bg-black px-3 py-1.5 rounded-lg border border-stone-700">Move basket: <kbd class="px-2 py-0.5 bg-stone-800 text-amber-300 rounded font-black">A / ←</kbd> and <kbd class="px-2 py-0.5 bg-stone-800 text-amber-300 rounded font-black">D / →</kbd> or drag with mouse/touch!</span>
+                    <div class="flex sm:hidden gap-2 w-full justify-center">
+                        <button id="g3-btn-left" class="arcade-btn bg-red-600 text-white font-black px-6 py-2.5 rounded-xl text-base flex-1">◀ BASKET LEFT</button>
+                        <button id="g3-btn-right" class="arcade-btn bg-red-600 text-white font-black px-6 py-2.5 rounded-xl text-base flex-1">BASKET RIGHT ▶</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             VIEW 4: MINI-GAME 4 - "FLYOVER TENDER DERBY"
+             ===================================================================== -->
+        <section id="view-game4" class="hidden w-full flex flex-col items-center">
+            <div class="w-full bg-stone-900 border-2 border-yellow-500 rounded-2xl p-3 sm:p-4 shadow-2xl relative">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <button onclick="PortalManager.returnToHub()" class="arcade-btn bg-black hover:bg-stone-800 text-white border border-stone-600 px-3 py-1.5 rounded-xl text-xs font-black">
+                            ◀ PORTAL
+                        </button>
+                        <h2 class="font-teko text-2xl text-yellow-400 leading-none">FLYOVER TENDER DERBY</h2>
+                        <span id="g4-level-badge" class="bg-yellow-950 text-yellow-300 border border-yellow-500 font-black px-2 py-0.5 rounded text-xs">
+                            LVL 1
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs sm:text-sm font-black">
+                        <!-- Hearts -->
+                        <div class="bg-black px-3 py-1 rounded-xl border border-stone-700 flex items-center gap-1">
+                            <span class="text-stone-300">SCOOTER HP:</span>
+                            <span id="g4-hearts" class="text-red-500 text-base">❤️❤️❤️</span>
+                        </div>
+                        <div class="bg-black px-3 py-1 rounded-xl border border-stone-700 text-white">
+                            TENDERS: <span id="g4-tenders" class="text-yellow-400 font-black">0</span>
+                        </div>
+                        <div class="bg-emerald-950 text-emerald-300 px-3 py-1 rounded-xl border border-emerald-600 font-black">
+                            DISTANCE: <span id="g4-distance" class="text-white">0</span>m / <span id="g4-target-dist">500</span>m
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="relative w-full aspect-[16/9] max-h-[55vh] bg-stone-950 rounded-xl overflow-hidden border-2 border-stone-700">
+                    <canvas id="g4-canvas" class="w-full h-full block"></canvas>
+                    <div class="scanlines absolute inset-0"></div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-between mt-3 text-xs sm:text-sm text-stone-200 font-bold">
+                    <span class="hidden sm:inline bg-black px-3 py-1.5 rounded-lg border border-stone-700">Steer scooter: <kbd class="px-2 py-0.5 bg-stone-800 text-amber-300 rounded font-black">A / ←</kbd> and <kbd class="px-2 py-0.5 bg-stone-800 text-amber-300 rounded font-black">D / →</kbd>. Red warning arrows telegraph incoming craters!</span>
+                    <div class="flex sm:hidden gap-2 w-full justify-center">
+                        <button id="g4-btn-left" class="arcade-btn bg-yellow-400 text-black font-black px-6 py-2.5 rounded-xl text-base flex-1">◀ STEER LEFT</button>
+                        <button id="g4-btn-right" class="arcade-btn bg-yellow-400 text-black font-black px-6 py-2.5 rounded-xl text-base flex-1">STEER RIGHT ▶</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             VIEW 5: MINI-GAME 5 - "TATKAL & OTP PANIC"
+             ===================================================================== -->
+        <section id="view-game5" class="hidden w-full flex flex-col items-center">
+            <div class="w-full bg-stone-900 border-2 border-cyan-500 rounded-2xl p-4 sm:p-6 shadow-2xl relative max-w-2xl">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <button onclick="PortalManager.returnToHub()" class="arcade-btn bg-black hover:bg-stone-800 text-white border border-stone-600 px-3 py-1.5 rounded-xl text-xs font-black">
+                            ◀ PORTAL
+                        </button>
+                        <h2 class="font-teko text-2xl text-cyan-400 leading-none">TATKAL & AADHAAR OTP PANIC</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="g5-level-badge" class="bg-cyan-950 text-cyan-300 border border-cyan-500 font-black px-2 py-0.5 rounded text-xs">
+                            LVL 1
+                        </span>
+                        <div class="text-xs sm:text-sm font-black bg-red-950 text-red-200 px-3 py-1 rounded-xl border border-red-600">
+                            SERVER TIMEOUT IN: <span id="g5-timer" class="font-digital text-yellow-300 font-bold">18.0</span>s
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Realistic IRCTC/Aadhaar Booking Form -->
+                <div class="bg-black rounded-xl p-4 border-2 border-stone-700 mb-3">
+                    <div class="flex items-center justify-between border-b border-stone-800 pb-2 mb-3 text-xs font-bold">
+                        <span class="text-stone-300">PORTAL: #TATKAL-SPECIAL-2026</span>
+                        <span class="text-amber-400 animate-pulse font-black">● LIVE CLOCK: <span id="g5-clock-time">09:59:52 AM</span></span>
+                    </div>
+
+                    <!-- Step 1: High-Contrast 4-Character CAPTCHA -->
+                    <div id="g5-step1">
+                        <p class="text-xs sm:text-sm text-stone-200 font-bold mb-2">
+                            STEP 1/2: ENTER THE 4-CHARACTER ANTI-BOT CAPTCHA:
+                        </p>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div id="g5-captcha-box" class="bg-gradient-to-r from-stone-900 to-stone-800 border-2 border-dashed border-amber-400 rounded-xl px-5 py-2 text-2xl font-digital font-bold text-amber-300 tracking-widest shadow-inner">
+                                BRIB
+                            </div>
+                            <input id="g5-captcha-input" type="text" maxlength="4" placeholder="TYPE 4 LETTERS" class="flex-1 bg-stone-900 border-2 border-stone-600 focus:border-cyan-400 rounded-xl px-4 py-2 text-center font-digital text-xl text-white uppercase focus:outline-none">
+                            <button id="g5-btn-submit-captcha" class="arcade-btn bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2.5 rounded-xl font-black text-sm uppercase">
+                                VERIFY ▶
+                            </button>
+                        </div>
+                        <p id="g5-captcha-error" class="text-xs text-red-400 font-bold hidden">
+                            ⚠️ Incorrect CAPTCHA! Strike 1 of 2. Server load increasing!
+                        </p>
+                    </div>
+
+                    <!-- Step 2: Simulated Phone SMS OTP Popup -->
+                    <div id="g5-step2" class="hidden">
+                        <div class="bg-stone-900 border-2 border-cyan-400 rounded-xl p-3 mb-3 text-center">
+                            <span class="text-xs text-amber-300 font-black block mb-1">📱 SIMULATED CITIZEN PHONE INBOX</span>
+                            <div class="bg-black p-2.5 rounded-lg border border-stone-700 text-sm font-bold text-white">
+                                📩 SMS: "Your Tatkal Scheme OTP is <span id="g5-otp-value" class="text-cyan-300 font-digital text-xl tracking-widest font-black">6291</span>. Valid for 10 seconds before 504 Timeout."
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-3">
+                            <input id="g5-otp-input" type="text" maxlength="4" placeholder="ENTER 4 DIGITS" class="flex-1 bg-black border-2 border-cyan-400 rounded-xl px-4 py-2.5 text-center font-digital text-2xl text-cyan-300 tracking-widest focus:outline-none">
+                            <button id="g5-btn-autofill" class="arcade-btn bg-cyan-600 hover:bg-cyan-500 text-black px-5 py-3 rounded-xl text-xs sm:text-sm font-black">
+                                📋 AUTO-PASTE
+                            </button>
+                        </div>
+                        <button id="g5-btn-submit-otp" class="arcade-btn w-full bg-cyan-400 hover:bg-cyan-300 text-black font-teko text-2xl py-2.5 rounded-xl uppercase">
+                            CONFIRM TATKAL BERTH ▶
+                        </button>
+                    </div>
+                </div>
+
+                <div id="g5-status-footer" class="text-center text-xs text-stone-300 font-bold">
+                    Complete verification before 10:00:15 AM to avoid the Error 504 Gateway Timeout!
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             UNIVERSAL RESULT & NEWSPAPER STAMP MODAL (WIN / LOSS)
+             ===================================================================== -->
+        <div id="modal-result" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-stone-900 border-4 rounded-2xl p-6 max-w-md w-full text-center relative shadow-2xl" id="modal-box">
+                <!-- Rubber Stamp Banner -->
+                <div id="modal-stamp" class="hidden absolute top-4 right-4 border-4 px-3 py-1 rounded font-teko text-3xl uppercase tracking-wider transform -rotate-12 pointer-events-none">
+                    APPROVED
+                </div>
+
+                <div id="modal-icon" class="text-6xl mb-1">🎉</div>
+                <h3 id="modal-title" class="font-teko text-3xl sm:text-4xl mb-0.5 leading-none">DEFEAT</h3>
+                <p id="modal-desc" class="text-stone-200 text-sm font-bold mb-4">
+                    The system prevailed against you this time!
+                </p>
+
+                <!-- Impact summary -->
+                <div class="grid grid-cols-2 gap-2 bg-black p-3 rounded-xl border border-stone-700 text-xs sm:text-sm font-black mb-4">
+                    <div>
+                        <span class="text-stone-400 block text-xs">STRESS IMPACT</span>
+                        <span id="modal-stress-change" class="text-base font-black text-emerald-400">-10%</span>
+                    </div>
+                    <div>
+                        <span class="text-stone-400 block text-xs">PENSION IMPACT</span>
+                        <span id="modal-pension-change" class="text-base font-black text-emerald-400">+₹3,000</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <button id="modal-btn-next-tier" class="arcade-btn w-full bg-emerald-500 hover:bg-emerald-400 text-black font-teko text-xl py-2 rounded-xl uppercase tracking-wider">
+                        ADVANCE TO NEXT ADMINISTRATIVE TIER ▶
+                    </button>
+                    <div class="flex gap-2">
+                        <button id="modal-btn-retry" class="arcade-btn flex-1 bg-stone-800 hover:bg-stone-700 text-white font-teko text-lg py-2 rounded-xl uppercase">
+                            RETRY LEVEL 🔄
+                        </button>
+                        <button onclick="PortalManager.returnToHub()" class="arcade-btn flex-1 bg-amber-400 hover:bg-amber-300 text-black font-teko text-lg py-2 rounded-xl uppercase">
+                            PORTAL HUB 🏛️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- =========================================================================
+         LIVE BREAKING BUREAUCRATIC NEWS TICKER (BOTTOM)
+         ========================================================================= -->
+    <div class="w-full max-w-5xl mx-auto mt-3 bg-stone-950 border-t-2 border-b-2 border-amber-400 flex items-stretch h-11 overflow-hidden relative shadow-xl rounded-xl">
+        <div class="bg-gradient-to-r from-red-700 to-red-600 text-white font-teko px-4 flex items-center justify-center gap-1.5 shrink-0 z-10 border-r-2 border-amber-400 text-lg tracking-wider">
+            <span>🚨 SARKAR BULLETIN</span>
+        </div>
+        <div class="flex-1 overflow-hidden flex items-center bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-black font-bold text-xs sm:text-sm">
+            <div id="portal-ticker-track" class="ticker-track items-center">
+                <!-- Injected dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MODULAR SATIRICAL GAME ENGINE
+         ========================================================================= -->
+    <script>
+        /**
+         * ============================================================================
+         * 1. SATIRICAL BULLETIN TICKER DATABASE
+         * ============================================================================
+         */
+        const SARKAR_HEADLINES = [
+            "🚨 LUNCH TIME EXTENDED: Babu leaves Counter 4 for 15-minute tea break; returns after two election cycles.",
+            "🧅 MANDI CRISIS: Onions hit ₹180/kg; cabinet spokesperson advises citizens to cut emotional ties with gravy.",
+            "🌉 FLYOVER UPDATE: Newly opened bypass declared 100% weather-resistant; contractors advise not driving during light rain.",
+            "📱 DIGITAL INDIA MIRACLE: Citizen enters CAPTCHA correctly on first attempt; awarded civilian bravery citation.",
+            "☕ CHAI-PANI REVISION: Sub-inspector accepts digital UPI payment for no-parking challan; cites cashless governance."
+        ];
+
+        /**
+         * ============================================================================
+         * 2. RETRO SOUND SYNTHESIZER (WEB AUDIO API)
+         * ============================================================================
+         */
+        class RetroAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) this.ctx = new AudioContextClass();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            toggleMute() {
+                this.muted = !this.muted;
+                return this.muted;
+            }
+
+            playBlip(freq = 440, type = 'square', duration = 0.08) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const now = this.ctx.currentTime;
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, now);
+
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + duration);
+            }
+
+            playStampThud() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.exponentialRampToValueAtTime(32, now + 0.18);
+
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+
+            playBuzzer() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(105, now);
+                osc.frequency.setValueAtTime(75, now + 0.14);
+
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+
+            playCoin() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987, now);
+                osc.frequency.setValueAtTime(1318, now + 0.08);
+
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+
+            playScooterHorn() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const osc1 = this.ctx.createOscillator();
+                const osc2 = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc1.type = 'sawtooth';
+                osc2.type = 'triangle';
+                osc1.frequency.setValueAtTime(360, now);
+                osc2.frequency.setValueAtTime(380, now);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.2);
+                osc2.stop(now + 0.2);
+            }
+        }
+
+        const Sound = new RetroAudioEngine();
+
+        /**
+         * ============================================================================
+         * 3. PORTAL MANAGER & SHARED METRICS
+         * ============================================================================
+         */
+        const PortalManager = {
+            stress: 15,
+            pension: 15000,
+            activeGameId: null,
+            level: 1, // 1 = Panchayat, 2 = Vidhan Sabha, 3 = Lok Sabha
+            badges: [
+                { id: 'b1', name: 'Master of Counter 4', icon: '📂', unlocked: false },
+                { id: 'b2', name: 'Chai-Pani Negotiator', icon: '☕', unlocked: false },
+                { id: 'b3', name: 'Mandi Budget Ninja', icon: '🧺', unlocked: false },
+                { id: 'b4', name: 'Flyover Tender Surfer', icon: '🛵', unlocked: false },
+                { id: 'b5', name: '10:00 AM Tatkal Legend', icon: '⚡', unlocked: false }
+            ],
+
+            init() {
+                this.renderHUD();
+                this.renderBadges();
+                this.populateTicker();
+                this.bindEvents();
+                this.setLevel(1);
+            },
+
+            populateTicker() {
+                const track = document.getElementById('portal-ticker-track');
+                const list = [...SARKAR_HEADLINES, ...SARKAR_HEADLINES];
+                track.innerHTML = list.map(item => `
+                    <span class="mx-6 flex items-center gap-2 whitespace-nowrap">
+                        <span class="inline-block px-1.5 py-0.5 bg-red-600 text-white text-[10px] rounded font-teko">OFFICIAL</span>
+                        <span>${item}</span>
+                    </span>
+                `).join('');
+            },
+
+            bindEvents() {
+                const sBtn = document.getElementById('global-sound-btn');
+                const sIcon = document.getElementById('sound-icon');
+                const sLabel = document.getElementById('sound-label');
+
+                sBtn.addEventListener('click', () => {
+                    const isMuted = Sound.toggleMute();
+                    sIcon.textContent = isMuted ? '🔇' : '🔊';
+                    sLabel.textContent = isMuted ? 'MUTED' : 'SFX ON';
+                    if (!isMuted) Sound.playBlip(520);
+                });
+
+                document.getElementById('modal-btn-retry').addEventListener('click', () => {
+                    this.hideModal();
+                    if (this.activeGameId) this.launch(this.activeGameId, this.level);
+                });
+
+                document.getElementById('modal-btn-next-tier').addEventListener('click', () => {
+                    this.hideModal();
+                    if (this.activeGameId) {
+                        const nextTier = Math.min(3, this.level + 1);
+                        this.launch(this.activeGameId, nextTier);
+                    }
+                });
+            },
+
+            setLevel(lvl) {
+                this.level = lvl;
+                [1, 2, 3].forEach(l => {
+                    const btn = document.getElementById(`btn-level-${l}`);
+                    if (l === lvl) {
+                        btn.className = 'px-3 py-2 rounded-lg text-xs font-black tracking-wide bg-emerald-500 text-black shadow';
+                    } else {
+                        btn.className = 'px-3 py-2 rounded-lg text-xs font-black tracking-wide text-stone-300 hover:text-white';
+                    }
+                });
+                Sound.playBlip(500);
+            },
+
+            renderHUD() {
+                this.stress = Math.max(0, Math.min(100, this.stress));
+                document.getElementById('global-stress-text').textContent = `${this.stress}%`;
+                document.getElementById('global-stress-bar').style.width = `${this.stress}%`;
+                document.getElementById('global-pension').textContent = `₹${this.pension.toLocaleString()}`;
+            },
+
+            renderBadges() {
+                const container = document.getElementById('badge-container');
+                const unlockedCount = this.badges.filter(b => b.unlocked).length;
+                document.getElementById('badge-count').textContent = `${unlockedCount} / ${this.badges.length} Unlocked`;
+
+                container.innerHTML = this.badges.map(b => `
+                    <div class="px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center gap-2 ${
+                        b.unlocked 
+                            ? 'bg-amber-950 border-amber-400 text-amber-300 shadow' 
+                            : 'bg-stone-900 border-stone-800 text-stone-500 opacity-60'
+                    }">
+                        <span class="text-base">${b.icon}</span>
+                        <span>${b.name}</span>
+                    </div>
+                `).join('');
+            },
+
+            unlockBadge(id) {
+                const badge = this.badges.find(b => b.id === id);
+                if (badge && !badge.unlocked) {
+                    badge.unlocked = true;
+                    this.renderBadges();
+                }
+            },
+
+            adjustStats(stressDelta, pensionDelta) {
+                this.stress += stressDelta;
+                this.pension += pensionDelta;
+                this.renderHUD();
+            },
+
+            launch(gameId, level = null) {
+                this.stopCurrent();
+                this.activeGameId = gameId;
+                if (level !== null) this.level = level;
+
+                document.getElementById('view-hub').classList.add('hidden');
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`view-game${i}`).classList.add('hidden');
+                }
+
+                const view = document.getElementById(`view-game${gameId}`);
+                if (view) view.classList.remove('hidden');
+
+                const levelNames = ['PANCHAYAT (LVL 1)', 'VIDHAN SABHA (LVL 2)', 'LOK SABHA (LVL 3)'];
+                const badge = document.getElementById(`g${gameId}-level-badge`);
+                if (badge) badge.textContent = levelNames[this.level - 1];
+
+                Sound.playBlip(600);
+
+                if (gameId === 1) Game1_CounterNo4.start(this.level);
+                if (gameId === 2) Game2_ChaiPaniSlider.start(this.level);
+                if (gameId === 3) Game3_MandiInflation.start(this.level);
+                if (gameId === 4) Game4_FlyoverDerby.start(this.level);
+                if (gameId === 5) Game5_TatkalPanic.start(this.level);
+            },
+
+            stopCurrent() {
+                if (this.activeGameId === 1) Game1_CounterNo4.stop();
+                if (this.activeGameId === 2) Game2_ChaiPaniSlider.stop();
+                if (this.activeGameId === 3) Game3_MandiInflation.stop();
+                if (this.activeGameId === 4) Game4_FlyoverDerby.stop();
+                if (this.activeGameId === 5) Game5_TatkalPanic.stop();
+            },
+
+            returnToHub() {
+                this.stopCurrent();
+                this.activeGameId = null;
+                this.hideModal();
+
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`view-game${i}`).classList.add('hidden');
+                }
+                document.getElementById('view-hub').classList.remove('hidden');
+                Sound.playBlip(440);
+            },
+
+            showModal({ victory, title, desc, stressDelta, pensionDelta, badgeId }) {
+                this.adjustStats(stressDelta, pensionDelta);
+                if (victory && badgeId) this.unlockBadge(badgeId);
+
+                const modal = document.getElementById('modal-result');
+                const box = document.getElementById('modal-box');
+                const stamp = document.getElementById('modal-stamp');
+                const icon = document.getElementById('modal-icon');
+                const titleEl = document.getElementById('modal-title');
+                const descEl = document.getElementById('modal-desc');
+                const stressChangeEl = document.getElementById('modal-stress-change');
+                const pensionChangeEl = document.getElementById('modal-pension-change');
+                const nextTierBtn = document.getElementById('modal-btn-next-tier');
+
+                box.className = `bg-stone-900 border-4 rounded-2xl p-6 max-w-md w-full text-center relative shadow-2xl ${
+                    victory ? 'border-amber-400' : 'border-red-600'
+                }`;
+
+                icon.textContent = victory ? '🏛️' : '💥';
+                titleEl.textContent = title;
+                titleEl.className = `font-teko text-4xl mb-0.5 leading-none ${victory ? 'text-amber-400' : 'text-red-500'}`;
+                descEl.textContent = desc;
+
+                stressChangeEl.textContent = `${stressDelta > 0 ? '+' : ''}${stressDelta}%`;
+                stressChangeEl.className = `text-base font-black ${stressDelta <= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+                pensionChangeEl.textContent = `${pensionDelta >= 0 ? '+' : ''}₹${pensionDelta.toLocaleString()}`;
+                pensionChangeEl.className = `text-base font-black ${pensionDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+                if (victory) {
+                    stamp.classList.remove('hidden');
+                    stamp.className = 'absolute top-4 right-4 border-4 px-3 py-0.5 rounded font-teko text-3xl uppercase tracking-wider border-emerald-500 text-emerald-400 stamp-effect pointer-events-none';
+                    stamp.textContent = 'APPROVED';
+                    Sound.playStampThud();
+
+                    if (this.level < 3) {
+                        nextTierBtn.classList.remove('hidden');
+                        nextTierBtn.textContent = `ADVANCE TO TIER ${this.level + 1} ▶`;
+                    } else {
+                        nextTierBtn.classList.add('hidden');
+                    }
+                } else {
+                    stamp.classList.remove('hidden');
+                    stamp.className = 'absolute top-4 right-4 border-4 px-3 py-0.5 rounded font-teko text-3xl uppercase tracking-wider border-red-600 text-red-500 stamp-effect pointer-events-none';
+                    stamp.textContent = 'REJECTED';
+                    Sound.playBuzzer();
+                    nextTierBtn.classList.add('hidden');
+                }
+
+                modal.classList.remove('hidden');
+            },
+
+            hideModal() {
+                document.getElementById('modal-result').classList.add('hidden');
+            }
+        };
+
+        /**
+         * ============================================================================
+         * 4. MINI-GAME 1: "COUNTER NO. 4" (THE FILE SPRINT)
+         * ============================================================================
+         */
+        const Game1_CounterNo4 = {
+            canvas: null,
+            ctx: null,
+            animId: null,
+            timerInterval: null,
+            level: 1,
+            timeLeft: 35,
+            hearts: 3,
+            stamps: 0,
+            requiredStamps: 3,
+            targetCounter: 2,
+            player: { x: 100, y: 310, width: 44, height: 62, vx: 0, speed: 7.2 },
+            obstacles: [],
+            counters: [
+                { id: 1, x: 90 },
+                { id: 2, x: 290 },
+                { id: 3, x: 490 },
+                { id: 4, x: 690 }
+            ],
+            dialogues: [
+                "Babu is in tea canteen! Sprint to Counter 2 with Netaji's recommendation letter!",
+                "Affidavit notary stamp missing! Go to Counter 1 before lunch siren blows!",
+                "File stuck in store room! Sprint to Counter 3 with ration card xerox!",
+                "Officer returned! Hurry to Counter 4 for final rubber stamp signature!"
+            ],
+
+            init() {
+                this.canvas = document.getElementById('g1-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 800;
+                this.canvas.height = 450;
+
+                window.addEventListener('keydown', (e) => {
+                    if (PortalManager.activeGameId !== 1) return;
+                    if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.player.vx = -this.player.speed;
+                    if (e.code === 'KeyD' || e.code === 'ArrowRight') this.player.vx = this.player.speed;
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if (PortalManager.activeGameId !== 1) return;
+                    if (['KeyA', 'ArrowLeft', 'KeyD', 'ArrowRight'].includes(e.code)) {
+                        this.player.vx = 0;
+                    }
+                });
+
+                const btnL = document.getElementById('g1-btn-left');
+                const btnR = document.getElementById('g1-btn-right');
+                btnL.onmousedown = btnL.ontouchstart = (e) => { e.preventDefault(); this.player.vx = -this.player.speed; };
+                btnL.onmouseup = btnL.ontouchend = () => { this.player.vx = 0; };
+                btnR.onmousedown = btnR.ontouchstart = (e) => { e.preventDefault(); this.player.vx = this.player.speed; };
+                btnR.onmouseup = btnR.ontouchend = () => { this.player.vx = 0; };
+            },
+
+            start(level = 1) {
+                if (!this.canvas) this.init();
+                this.level = level;
+                this.hearts = 3;
+                this.stamps = 0;
+                this.obstacles = [];
+                this.player.x = 100;
+                this.player.vx = 0;
+
+                if (level === 1) {
+                    this.timeLeft = 35;
+                    this.obstacleRate = 0.024;
+                    this.obstacleSpeed = 2.2;
+                } else if (level === 2) {
+                    this.timeLeft = 26;
+                    this.obstacleRate = 0.042;
+                    this.obstacleSpeed = 3.2;
+                } else {
+                    this.timeLeft = 18;
+                    this.obstacleRate = 0.065;
+                    this.obstacleSpeed = 4.4;
+                }
+
+                this.pickTarget();
+                this.updateUI();
+
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateUI();
+                    if (this.timeLeft <= 0) {
+                        this.stop();
+                        PortalManager.showModal({
+                            victory: false,
+                            title: "LUNCH TIME SHUTDOWN!",
+                            desc: "Babu slammed the metal grill: 'Server is down, come back after state elections!'",
+                            stressDelta: 18,
+                            pensionDelta: -1000
+                        });
+                    }
+                }, 1000);
+
+                this.loop();
+            },
+
+            stop() {
+                clearInterval(this.timerInterval);
+                if (this.animId) cancelAnimationFrame(this.animId);
+            },
+
+            pickTarget() {
+                const choices = [1, 2, 3, 4].filter(c => c !== this.targetCounter);
+                this.targetCounter = choices[Math.floor(Math.random() * choices.length)];
+                const quote = this.dialogues[Math.floor(Math.random() * this.dialogues.length)];
+                document.getElementById('g1-dialogue').textContent = `"${quote}"`;
+                Sound.playBlip(380);
+            },
+
+            updateUI() {
+                document.getElementById('g1-stamps').textContent = `${this.stamps} / ${this.requiredStamps}`;
+                document.getElementById('g1-timer').textContent = this.timeLeft;
+                document.getElementById('g1-hearts').textContent = '❤️'.repeat(this.hearts) + '🖤'.repeat(3 - this.hearts);
+            },
+
+            loop() {
+                this.update();
+                this.draw();
+                this.animId = requestAnimationFrame(() => this.loop());
+            },
+
+            update() {
+                this.player.x += this.player.vx;
+                if (this.player.x < 30) this.player.x = 30;
+                if (this.player.x > 730) this.player.x = 730;
+
+                // Spawn falling chai and 1994 pension files with yellow warning outlines
+                if (Math.random() < this.obstacleRate) {
+                    const types = [
+                        { emoji: '☕', label: 'Hot Chai Spill' },
+                        { emoji: '📜', label: '1994 File' },
+                        { emoji: '🖊️', label: 'Blue Pen Demand' }
+                    ];
+                    const selected = types[Math.floor(Math.random() * types.length)];
+                    this.obstacles.push({
+                        x: 50 + Math.random() * 700,
+                        y: 0,
+                        vy: this.obstacleSpeed + Math.random() * 1.2,
+                        ...selected,
+                        size: 32
+                    });
+                }
+
+                this.obstacles.forEach(o => o.y += o.vy);
+
+                // Collision detection with player
+                this.obstacles.forEach((o, idx) => {
+                    if (
+                        o.x < this.player.x + this.player.width &&
+                        o.x + o.size > this.player.x &&
+                        o.y < this.player.y + this.player.height &&
+                        o.y + o.size > this.player.y
+                    ) {
+                        this.obstacles.splice(idx, 1);
+                        this.hearts--;
+                        Sound.playBuzzer();
+                        this.updateUI();
+
+                        if (this.hearts <= 0) {
+                            this.stop();
+                            PortalManager.showModal({
+                                victory: false,
+                                title: "FILE TOSSED OUT!",
+                                desc: "Hit by hot chai and flying files! The babu cancelled your token number!",
+                                stressDelta: 20,
+                                pensionDelta: -1500
+                            });
+                        }
+                    }
+                });
+
+                this.obstacles = this.obstacles.filter(o => o.y < 420);
+
+                // Check reaching target counter
+                const targetObj = this.counters.find(c => c.id === this.targetCounter);
+                if (targetObj) {
+                    const dist = Math.abs((this.player.x + this.player.width / 2) - (targetObj.x + 35));
+                    if (dist < 42) {
+                        this.stamps++;
+                        Sound.playStampThud();
+                        this.updateUI();
+
+                        if (this.stamps >= this.requiredStamps) {
+                            this.stop();
+                            PortalManager.showModal({
+                                victory: true,
+                                title: `TIER ${this.level} STAMP OBTAINED!`,
+                                desc: `You outran the babu's lunch break! File officially approved under citizen quota!`,
+                                stressDelta: -16,
+                                pensionDelta: 3000 * this.level,
+                                badgeId: 'b1'
+                            });
+                        } else {
+                            this.pickTarget();
+                        }
+                    }
+                }
+            },
+
+            draw() {
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, 800, 450);
+
+                // Office Wall & Floor
+                ctx.fillStyle = '#064e3b';
+                ctx.fillRect(0, 0, 800, 360);
+                ctx.fillStyle = '#1c1917';
+                ctx.fillRect(0, 360, 800, 90);
+
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(0, 360);
+                ctx.lineTo(800, 360);
+                ctx.stroke();
+
+                // Counters
+                this.counters.forEach(c => {
+                    const isTarget = c.id === this.targetCounter;
+                    ctx.save();
+                    ctx.fillStyle = isTarget ? '#047857' : '#022c22';
+                    ctx.strokeStyle = isTarget ? '#facc15' : '#10b981';
+                    ctx.lineWidth = isTarget ? 4 : 2;
+                    ctx.beginPath();
+                    ctx.roundRect(c.x, 150, 72, 170, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Babu behind counter
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(c.x + 8, 165, 56, 60);
+                    ctx.font = '28px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('👨‍💼', c.x + 36, 206);
+
+                    ctx.font = 'bold 12px "Inter", sans-serif';
+                    ctx.fillStyle = isTarget ? '#fef08a' : '#a7f3d0';
+                    ctx.fillText(`COUNTER ${c.id}`, c.x + 36, 135);
+
+                    if (isTarget) {
+                        ctx.fillStyle = '#facc15';
+                        ctx.font = 'bold 14px "Inter", sans-serif';
+                        ctx.fillText('▼ TARGET ▼', c.x + 36, 115);
+                    }
+                    ctx.restore();
+                });
+
+                // Falling Obstacles with Yellow Hazard Outlines
+                this.obstacles.forEach(o => {
+                    ctx.save();
+                    ctx.strokeStyle = '#facc15';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(o.x - 4, o.y - 28, o.size + 8, o.size + 8);
+                    ctx.font = '28px sans-serif';
+                    ctx.fillText(o.emoji, o.x, o.y);
+                    ctx.restore();
+                });
+
+                // Citizen Player
+                ctx.save();
+                ctx.fillStyle = '#f97316';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(this.player.x, this.player.y, this.player.width, this.player.height, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                // Kurta & Specs
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(this.player.x + 4, this.player.y + 24, this.player.width - 8, 36);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(this.player.x + 8, this.player.y + 10, 10, 8);
+                ctx.fillRect(this.player.x + 24, this.player.y + 10, 10, 8);
+                ctx.font = '22px sans-serif';
+                ctx.fillText('📑', this.player.x + this.player.width - 6, this.player.y + 36);
+                ctx.restore();
+            }
+        };
+
+        /**
+         * ============================================================================
+         * 5. MINI-GAME 2: "THE CHAI-PANI BRIBE SLIDER"
+         * ============================================================================
+         */
+        const Game2_ChaiPaniSlider = {
+            round: 1,
+            maxRounds: 3,
+            sliderPos: 0,
+            direction: 1,
+            speed: 1.2,
+            sweetSpotLeft: 40,
+            sweetSpotWidth: 20,
+            animId: null,
+            isRunning: false,
+            level: 1,
+
+            officials: [
+                {
+                    title: "ROUND 1: TRAFFIC HAVALDAR AT NAKA",
+                    quote: "Helmet belt is loose! Give ₹200 for chai-pani or your scooter goes to the compound!",
+                    emoji: "👮",
+                    bribeTag: "₹200 Chai-Pani Note"
+                },
+                {
+                    title: "ROUND 2: MUNICIPAL SANCTION ENGINEER",
+                    quote: "Balcony map exceeds standard blue-print by 2 inches! Settle the clearance fee now!",
+                    emoji: "👷",
+                    bribeTag: "₹2,000 File Clearance"
+                },
+                {
+                    title: "ROUND 3: COALITION ALLIANCE WHIP",
+                    quote: "Election chanda is mandatory to keep shop open on polling day! Pass the bond envelope!",
+                    emoji: "🏛️",
+                    bribeTag: "₹20,000 Electoral Bond"
+                }
+            ],
+
+            init() {
+                const btn = document.getElementById('g2-action-btn');
+                btn.addEventListener('click', () => this.handleAction());
+
+                window.addEventListener('keydown', (e) => {
+                    if (PortalManager.activeGameId !== 2) return;
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        this.handleAction();
+                    }
+                });
+            },
+
+            start(level = 1) {
+                this.init();
+                this.level = level;
+                this.round = 1;
+                this.loadRound(this.round);
+            },
+
+            stop() {
+                this.isRunning = false;
+                if (this.animId) cancelAnimationFrame(this.animId);
+            },
+
+            loadRound(rIndex) {
+                const official = this.officials[rIndex - 1];
+                document.getElementById('g2-round').textContent = `${rIndex} / ${this.maxRounds}`;
+                document.getElementById('g2-official-title').textContent = official.title;
+                document.getElementById('g2-official-quote').textContent = `"${official.quote}"`;
+                document.getElementById('g2-official-emoji').textContent = official.emoji;
+                document.getElementById('g2-action-btn').textContent = `SLIP ${official.bribeTag} (SPACE / TAP)`;
+
+                if (this.level === 1) {
+                    this.sweetSpotWidth = 22 - (rIndex * 2);
+                    this.speed = 1.2 + (rIndex * 0.3);
+                } else if (this.level === 2) {
+                    this.sweetSpotWidth = 16 - (rIndex * 2);
+                    this.speed = 1.8 + (rIndex * 0.4);
+                } else {
+                    this.sweetSpotWidth = 10 - (rIndex * 1.5);
+                    this.speed = 2.4 + (rIndex * 0.6);
+                }
+
+                this.sweetSpotLeft = 32 + Math.random() * (45 - this.sweetSpotWidth);
+                this.sliderPos = 5;
+                this.direction = 1;
+
+                const spot = document.getElementById('g2-sweet-spot');
+                spot.style.left = `${this.sweetSpotLeft}%`;
+                spot.style.width = `${this.sweetSpotWidth}%`;
+
+                this.isRunning = true;
+                this.loop();
+            },
+
+            loop() {
+                if (!this.isRunning) return;
+
+                this.sliderPos += this.speed * this.direction;
+                if (this.sliderPos >= 98) {
+                    this.sliderPos = 98;
+                    this.direction = -1;
+                } else if (this.sliderPos <= 2) {
+                    this.sliderPos = 2;
+                    this.direction = 1;
+                }
+
+                document.getElementById('g2-pin').style.left = `${this.sliderPos}%`;
+                this.animId = requestAnimationFrame(() => this.loop());
+            },
+
+            handleAction() {
+                if (!this.isRunning) return;
+                this.isRunning = false;
+
+                const pin = this.sliderPos;
+                const spotStart = this.sweetSpotLeft;
+                const spotEnd = this.sweetSpotLeft + this.sweetSpotWidth;
+
+                if (pin < spotStart) {
+                    Sound.playBuzzer();
+                    PortalManager.showModal({
+                        victory: false,
+                        title: "BULLDOZER NOTICE ISSUED!",
+                        desc: "Underpaid the official! Immediate FIR issued: 'Illegal structure encroaching since 1952!'",
+                        stressDelta: 20,
+                        pensionDelta: -2500
+                    });
+                } else if (pin > spotEnd) {
+                    Sound.playBuzzer();
+                    PortalManager.showModal({
+                        victory: false,
+                        title: "MIDNIGHT ED / CBI RAID!",
+                        desc: "Overpaid by too much! Official suspected you of laundering high-denomination hawala notes!",
+                        stressDelta: 25,
+                        pensionDelta: -5000
+                    });
+                } else {
+                    Sound.playCoin();
+                    if (this.round >= this.maxRounds) {
+                        PortalManager.showModal({
+                            victory: true,
+                            title: `TIER ${this.level} CHAI-PANI SETTLED!`,
+                            desc: `Precision negotiation! All 3 officials stamped your papers without investigation!`,
+                            stressDelta: -18,
+                            pensionDelta: 4000 * this.level,
+                            badgeId: 'b2'
+                        });
+                    } else {
+                        this.round++;
+                        setTimeout(() => this.loadRound(this.round), 400);
+                    }
+                }
+            }
+        };
+
+        /**
+         * ============================================================================
+         * 6. MINI-GAME 3: "MANDI & FREEBIE INFLATION"
+         * ============================================================================
+         */
+        const Game3_MandiInflation = {
+            canvas: null,
+            ctx: null,
+            animId: null,
+            timerInterval: null,
+            level: 1,
+            timeLeft: 28,
+            budget: 1500,
+            staplesCount: 0,
+            requiredStaples: 5,
+            basket: { x: 350, y: 380, width: 100, height: 35, speed: 8.5, vx: 0 },
+            items: [],
+
+            init() {
+                this.canvas = document.getElementById('g3-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 800;
+                this.canvas.height = 450;
+
+                window.addEventListener('keydown', (e) => {
+                    if (PortalManager.activeGameId !== 3) return;
+                    if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.basket.vx = -this.basket.speed;
+                    if (e.code === 'KeyD' || e.code === 'ArrowRight') this.basket.vx = this.basket.speed;
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if (PortalManager.activeGameId !== 3) return;
+                    if (['KeyA', 'ArrowLeft', 'KeyD', 'ArrowRight'].includes(e.code)) {
+                        this.basket.vx = 0;
+                    }
+                });
+
+                const handleMove = (clientX) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = 800 / rect.width;
+                    this.basket.x = (clientX - rect.left) * scaleX - this.basket.width / 2;
+                };
+
+                this.canvas.addEventListener('mousemove', (e) => handleMove(e.clientX));
+                this.canvas.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) handleMove(e.touches[0].clientX);
+                }, { passive: true });
+
+                const btnL = document.getElementById('g3-btn-left');
+                const btnR = document.getElementById('g3-btn-right');
+                btnL.onmousedown = btnL.ontouchstart = (e) => { e.preventDefault(); this.basket.vx = -this.basket.speed; };
+                btnL.onmouseup = btnL.ontouchend = () => { this.basket.vx = 0; };
+                btnR.onmousedown = btnR.ontouchstart = (e) => { e.preventDefault(); this.basket.vx = this.basket.speed; };
+                btnR.onmouseup = btnR.ontouchend = () => { this.basket.vx = 0; };
+            },
+
+            start(level = 1) {
+                if (!this.canvas) this.init();
+                this.level = level;
+                this.timeLeft = 28;
+                this.staplesCount = 0;
+                this.items = [];
+                this.basket.x = 350;
+                this.basket.vx = 0;
+
+                if (level === 1) {
+                    this.budget = 1600;
+                    this.hazardRatio = 0.22;
+                    this.dropSpeed = 2.8;
+                } else if (level === 2) {
+                    this.budget = 1200;
+                    this.hazardRatio = 0.36;
+                    this.dropSpeed = 3.6;
+                } else {
+                    this.budget = 900;
+                    this.hazardRatio = 0.50;
+                    this.dropSpeed = 4.8;
+                }
+
+                this.updateUI();
+
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateUI();
+                    if (this.timeLeft <= 0) {
+                        this.stop();
+                        if (this.staplesCount >= this.requiredStaples) {
+                            PortalManager.showModal({
+                                victory: true,
+                                title: `TIER ${this.level} RATION SECURED!`,
+                                desc: `You collected 5 essential staples and saved ₹${this.budget} for monthly electricity bills!`,
+                                stressDelta: -15,
+                                pensionDelta: this.budget * 2,
+                                badgeId: 'b3'
+                            });
+                        } else {
+                            PortalManager.showModal({
+                                victory: false,
+                                title: "MANDI TIME EXPIRED!",
+                                desc: "Failed to collect 5 mandatory grocery staples before the vegetable market shut down!",
+                                stressDelta: 16,
+                                pensionDelta: -1000
+                            });
+                        }
+                    }
+                }, 1000);
+
+                this.loop();
+            },
+
+            stop() {
+                clearInterval(this.timerInterval);
+                if (this.animId) cancelAnimationFrame(this.animId);
+            },
+
+            updateUI() {
+                document.getElementById('g3-staples').textContent = `${this.staplesCount} / ${this.requiredStaples}`;
+                document.getElementById('g3-budget').textContent = `₹${this.budget}`;
+                document.getElementById('g3-timer').textContent = this.timeLeft;
+            },
+
+            loop() {
+                this.update();
+                this.draw();
+                this.animId = requestAnimationFrame(() => this.loop());
+            },
+
+            update() {
+                this.basket.x += this.basket.vx;
+                if (this.basket.x < 10) this.basket.x = 10;
+                if (this.basket.x > 690) this.basket.x = 690;
+
+                // Spawn groceries & hazards
+                if (Math.random() < 0.05) {
+                    const isHazard = Math.random() < this.hazardRatio;
+                    if (isHazard) {
+                        const hazards = [
+                            { emoji: '💸', label: 'Cess Surcharge', penalty: 220 },
+                            { emoji: '🍾', label: 'Dry-Day Fine', penalty: 260 },
+                            { emoji: '⛽', label: 'Petrol Hike ₹10', penalty: 180 }
+                        ];
+                        const h = hazards[Math.floor(Math.random() * hazards.length)];
+                        this.items.push({ x: 30 + Math.random() * 720, y: 0, vy: this.dropSpeed + 0.6, ...h, isHazard: true });
+                    } else {
+                        const groceries = [
+                            { emoji: '🥔', label: 'Aloo Staple', cost: 40, isStaple: true },
+                            { emoji: '🧅', label: 'Pyaaz Staple', cost: 50, isStaple: true },
+                            { emoji: '🥫', label: 'Mustard Oil', cost: 70, isStaple: true },
+                            { emoji: '📺', label: 'Freebie Mixie', cost: -150, isStaple: false }
+                        ];
+                        const g = groceries[Math.floor(Math.random() * groceries.length)];
+                        this.items.push({ x: 30 + Math.random() * 720, y: 0, vy: this.dropSpeed, ...g, isHazard: false });
+                    }
+                }
+
+                this.items.forEach(item => item.y += item.vy);
+
+                this.items.forEach((item, idx) => {
+                    if (
+                        item.x > this.basket.x - 20 &&
+                        item.x < this.basket.x + this.basket.width &&
+                        item.y > this.basket.y - 10 &&
+                        item.y < this.basket.y + this.basket.height
+                    ) {
+                        this.items.splice(idx, 1);
+                        if (item.isHazard) {
+                            this.budget -= item.penalty;
+                            Sound.playBuzzer();
+                        } else {
+                            if (item.isStaple) this.staplesCount++;
+                            this.budget -= item.cost;
+                            Sound.playCoin();
+                        }
+                        this.updateUI();
+
+                        if (this.budget <= 0) {
+                            this.stop();
+                            PortalManager.showModal({
+                                victory: false,
+                                title: "HOUSEHOLD BUDGET HIT ₹0!",
+                                desc: "Inflation and sudden cess taxes completely emptied your wallet before the month ended!",
+                                stressDelta: 22,
+                                pensionDelta: -2000
+                            });
+                        }
+                    }
+                });
+
+                this.items = this.items.filter(item => item.y < 440);
+            },
+
+            draw() {
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, 800, 450);
+
+                // Mandi Canopy
+                ctx.fillStyle = '#991b1b';
+                ctx.fillRect(0, 0, 800, 60);
+                for (let x = 0; x < 800; x += 80) {
+                    ctx.fillStyle = (x / 80) % 2 === 0 ? '#ef4444' : '#fef08a';
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0); ctx.lineTo(x + 40, 60); ctx.lineTo(x, 60);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = '#1c1917';
+                ctx.fillRect(0, 60, 800, 390);
+
+                // Items
+                this.items.forEach(item => {
+                    ctx.font = '32px sans-serif';
+                    ctx.fillText(item.emoji, item.x, item.y);
+                    ctx.font = 'bold 12px "Inter", sans-serif';
+                    ctx.fillStyle = item.isHazard ? '#f87171' : '#4ade80';
+                    ctx.fillText(item.label, item.x - 14, item.y + 14);
+                });
+
+                // Basket
+                ctx.save();
+                ctx.fillStyle = '#b45309';
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(this.basket.x, this.basket.y, this.basket.width, this.basket.height, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.font = 'bold 12px "Inter", sans-serif';
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.fillText('RATION BASKET', this.basket.x + this.basket.width / 2, this.basket.y + 22);
+                ctx.restore();
+            }
+        };
+
+        /**
+         * ============================================================================
+         * 7. MINI-GAME 4: "FLYOVER TENDER DERBY"
+         * ============================================================================
+         */
+        const Game4_FlyoverDerby = {
+            canvas: null,
+            ctx: null,
+            animId: null,
+            distance: 0,
+            targetDistance: 500,
+            tendersCollected: 0,
+            hearts: 3,
+            currentLane: 1,
+            lanesX: [200, 400, 600],
+            scooterY: 340,
+            obstacles: [],
+            collectibles: [],
+            roadSpeed: 4.5,
+            level: 1,
+
+            init() {
+                this.canvas = document.getElementById('g4-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 800;
+                this.canvas.height = 450;
+
+                window.addEventListener('keydown', (e) => {
+                    if (PortalManager.activeGameId !== 4) return;
+                    if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.moveLane(-1);
+                    if (e.code === 'KeyD' || e.code === 'ArrowRight') this.moveLane(1);
+                });
+
+                document.getElementById('g4-btn-left').onclick = () => this.moveLane(-1);
+                document.getElementById('g4-btn-right').onclick = () => this.moveLane(1);
+            },
+
+            moveLane(dir) {
+                this.currentLane = Math.max(0, Math.min(2, this.currentLane + dir));
+                Sound.playScooterHorn();
+            },
+
+            start(level = 1) {
+                if (!this.canvas) this.init();
+                this.level = level;
+                this.distance = 0;
+                this.tendersCollected = 0;
+                this.hearts = 3;
+                this.currentLane = 1;
+                this.obstacles = [];
+                this.collectibles = [];
+                this.targetDistance = 500;
+
+                if (level === 1) {
+                    this.roadSpeed = 4.2;
+                    this.hazardRate = 0.024;
+                } else if (level === 2) {
+                    this.roadSpeed = 5.6;
+                    this.hazardRate = 0.038;
+                } else {
+                    this.roadSpeed = 7.0;
+                    this.hazardRate = 0.052;
+                }
+
+                document.getElementById('g4-target-dist').textContent = this.targetDistance;
+                this.updateUI();
+                this.loop();
+            },
+
+            stop() {
+                if (this.animId) cancelAnimationFrame(this.animId);
+            },
+
+            updateUI() {
+                document.getElementById('g4-tenders').textContent = this.tendersCollected;
+                document.getElementById('g4-distance').textContent = Math.floor(this.distance);
+                document.getElementById('g4-hearts').textContent = '❤️'.repeat(this.hearts) + '🖤'.repeat(3 - this.hearts);
+            },
+
+            loop() {
+                this.update();
+                this.draw();
+                this.animId = requestAnimationFrame(() => this.loop());
+            },
+
+            update() {
+                this.distance += 0.55;
+                this.updateUI();
+
+                if (this.distance >= this.targetDistance) {
+                    this.stop();
+                    PortalManager.showModal({
+                        victory: true,
+                        title: `TIER ${this.level} FLYOVER INAUGURATED!`,
+                        desc: `You crossed the 500m finish line safely and pocketed ${this.tendersCollected} kickback tenders!`,
+                        stressDelta: -16,
+                        pensionDelta: 3500 * this.level,
+                        badgeId: 'b4'
+                    });
+                    return;
+                }
+
+                // Spawn obstacles with 1.5s telegraphed red warning arrows
+                if (Math.random() < this.hazardRate) {
+                    const lane = Math.floor(Math.random() * 3);
+                    const types = [
+                        { emoji: '🕳️', label: 'Crater' },
+                        { emoji: '🐄', label: 'Cow Lane' },
+                        { emoji: '🚧', label: 'Barricade' }
+                    ];
+                    const selected = types[Math.floor(Math.random() * types.length)];
+                    this.obstacles.push({ lane, y: -60, ...selected, warningTimer: 45 });
+                }
+
+                // Collectible Tenders (restores 1 heart if damaged)
+                if (Math.random() < 0.025) {
+                    const lane = Math.floor(Math.random() * 3);
+                    this.collectibles.push({ lane, y: -40 });
+                }
+
+                this.obstacles.forEach(o => {
+                    o.y += this.roadSpeed;
+                    if (o.warningTimer > 0) o.warningTimer--;
+                });
+                this.collectibles.forEach(c => c.y += this.roadSpeed);
+
+                // Collect tenders
+                this.collectibles.forEach((c, idx) => {
+                    if (c.lane === this.currentLane && Math.abs(c.y - this.scooterY) < 36) {
+                        this.collectibles.splice(idx, 1);
+                        this.tendersCollected++;
+                        if (this.hearts < 3) this.hearts++;
+                        Sound.playCoin();
+                    }
+                });
+
+                // Obstacle collision
+                this.obstacles.forEach((o, idx) => {
+                    if (o.lane === this.currentLane && Math.abs(o.y - this.scooterY) < 36) {
+                        this.obstacles.splice(idx, 1);
+                        this.hearts--;
+                        Sound.playBuzzer();
+                        this.updateUI();
+
+                        if (this.hearts <= 0) {
+                            this.stop();
+                            PortalManager.showModal({
+                                victory: false,
+                                title: "SCOOTER CHASSIS SHATTERED!",
+                                desc: `Hit 3 consecutive flyover craters! The contractor who laid asphalt has vanished overseas!`,
+                                stressDelta: 20,
+                                pensionDelta: -2500
+                            });
+                        }
+                    }
+                });
+
+                this.obstacles = this.obstacles.filter(o => o.y < 460);
+                this.collectibles = this.collectibles.filter(c => c.y < 460);
+            },
+
+            draw() {
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, 800, 450);
+
+                // 3-lane Highway
+                ctx.fillStyle = '#27272a';
+                ctx.fillRect(100, 0, 600, 450);
+
+                ctx.strokeStyle = '#eab308';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(100, 0, 600, 450);
+
+                // Lane divider lines
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([25, 25]);
+                ctx.beginPath();
+                ctx.moveTo(300, 0); ctx.lineTo(300, 450);
+                ctx.moveTo(500, 0); ctx.lineTo(500, 450);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Warning Indicators for incoming obstacles
+                this.obstacles.forEach(o => {
+                    if (o.y < 120) {
+                        ctx.save();
+                        ctx.fillStyle = '#ef4444';
+                        ctx.font = 'bold 16px "Inter", sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('⚠️ CRATER!', this.lanesX[o.lane], 40);
+                        ctx.restore();
+                    }
+                });
+
+                // Collectibles
+                this.collectibles.forEach(c => {
+                    ctx.font = '32px sans-serif';
+                    ctx.fillText('💼', this.lanesX[c.lane] - 16, c.y);
+                });
+
+                // Obstacles
+                this.obstacles.forEach(o => {
+                    ctx.font = '36px sans-serif';
+                    ctx.fillText(o.emoji, this.lanesX[o.lane] - 18, o.y);
+                });
+
+                // Scooter Player
+                const targetX = this.lanesX[this.currentLane];
+                ctx.save();
+                ctx.font = '44px sans-serif';
+                ctx.fillText('🛵', targetX - 22, this.scooterY);
+                ctx.restore();
+            }
+        };
+
+        /**
+         * ============================================================================
+         * 8. MINI-GAME 5: "TATKAL & AADHAAR OTP PANIC"
+         * ============================================================================
+         */
+        const Game5_TatkalPanic = {
+            timerInterval: null,
+            clockInterval: null,
+            timeLeft: 18.0,
+            generatedOTP: '',
+            currentCaptcha: '',
+            captchaStrikes: 0,
+            step: 1,
+            level: 1,
+            captchas: ['BRIB', '504E', 'NTA1', 'SEBI', 'VOTE'],
+
+            init() {
+                document.getElementById('g5-btn-submit-captcha').onclick = () => this.verifyCaptcha();
+                document.getElementById('g5-btn-autofill').onclick = () => {
+                    document.getElementById('g5-otp-input').value = this.generatedOTP;
+                    Sound.playBlip(720);
+                };
+                document.getElementById('g5-btn-submit-otp').onclick = () => this.verifyOTP();
+
+                // Enter key support
+                document.getElementById('g5-captcha-input').onkeydown = (e) => {
+                    if (e.key === 'Enter') this.verifyCaptcha();
+                };
+                document.getElementById('g5-otp-input').onkeydown = (e) => {
+                    if (e.key === 'Enter') this.verifyOTP();
+                };
+            },
+
+            start(level = 1) {
+                this.init();
+                this.level = level;
+                this.step = 1;
+                this.captchaStrikes = 0;
+
+                if (level === 1) {
+                    this.timeLeft = 20.0;
+                } else if (level === 2) {
+                    this.timeLeft = 14.0;
+                } else {
+                    this.timeLeft = 9.5;
+                }
+
+                document.getElementById('g5-step1').classList.remove('hidden');
+                document.getElementById('g5-step2').classList.add('hidden');
+                document.getElementById('g5-captcha-input').value = '';
+                document.getElementById('g5-otp-input').value = '';
+                document.getElementById('g5-captcha-error').classList.add('hidden');
+
+                this.loadCaptcha();
+                this.updateUI();
+
+                // 10:00 AM IRCTC Live Clock simulation
+                let clockSec = 52;
+                clearInterval(this.clockInterval);
+                this.clockInterval = setInterval(() => {
+                    clockSec++;
+                    const sStr = clockSec < 60 ? `09:59:${clockSec}` : `10:00:0${clockSec - 60}`;
+                    document.getElementById('g5-clock-time').textContent = `${sStr} AM`;
+                }, 1000);
+
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft = (parseFloat(this.timeLeft) - 0.1).toFixed(1);
+                    this.updateUI();
+
+                    if (this.timeLeft <= 0) {
+                        this.stop();
+                        Sound.playBuzzer();
+                        PortalManager.showModal({
+                            victory: false,
+                            title: "ERROR 504: GATEWAY TIMEOUT!",
+                            desc: "Tatkal session expired at 10:00:15 AM! 45 million applicants overwhelmed the portal!",
+                            stressDelta: 24,
+                            pensionDelta: -1500
+                        });
+                    }
+                }, 100);
+            },
+
+            stop() {
+                clearInterval(this.timerInterval);
+                clearInterval(this.clockInterval);
+            },
+
+            updateUI() {
+                document.getElementById('g5-timer').textContent = `${this.timeLeft}s`;
+            },
+
+            loadCaptcha() {
+                this.currentCaptcha = this.captchas[Math.floor(Math.random() * this.captchas.length)];
+                document.getElementById('g5-captcha-box').textContent = this.currentCaptcha;
+            },
+
+            verifyCaptcha() {
+                const entered = document.getElementById('g5-captcha-input').value.trim().toUpperCase();
+                if (entered === this.currentCaptcha) {
+                    Sound.playBlip(880);
+                    this.step = 2;
+                    document.getElementById('g5-step1').classList.add('hidden');
+                    document.getElementById('g5-step2').classList.remove('hidden');
+
+                    this.generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+                    document.getElementById('g5-otp-value').textContent = this.generatedOTP;
+                    document.getElementById('g5-status-footer').textContent = "SMS arrived! Auto-paste or enter fast before timeout!";
+                } else {
+                    this.captchaStrikes++;
+                    Sound.playBuzzer();
+                    document.getElementById('g5-captcha-error').classList.remove('hidden');
+                    this.loadCaptcha();
+                    document.getElementById('g5-captcha-input').value = '';
+
+                    if (this.captchaStrikes >= 2) {
+                        this.stop();
+                        PortalManager.showModal({
+                            victory: false,
+                            title: "BLOCKED: BOT SUSPECTED!",
+                            desc: "Entered 2 incorrect CAPTCHAs during peak Tatkal window! IP address blacklisted for 24 hours!",
+                            stressDelta: 22,
+                            pensionDelta: -1200
+                        });
+                    }
+                }
+            },
+
+            verifyOTP() {
+                const entered = document.getElementById('g5-otp-input').value.trim();
+                if (entered === this.generatedOTP) {
+                    this.stop();
+                    Sound.playCoin();
+                    PortalManager.showModal({
+                        victory: true,
+                        title: `TIER ${this.level} TATKAL CONFIRMED!`,
+                        desc: `Berth allocated under citizen Tatkal quota before 10:00:15 AM server crash!`,
+                        stressDelta: -20,
+                        pensionDelta: 3500 * this.level,
+                        badgeId: 'b5'
+                    });
+                } else {
+                    Sound.playBuzzer();
+                    document.getElementById('g5-otp-input').value = '';
+                    this.timeLeft = Math.max(1, this.timeLeft - 2.5).toFixed(1);
+                }
+            }
+        };
+
+        // Initialize portal on load
+        window.onload = function () {
+            PortalManager.init();
+        };
+    </script>
+</body>
+</html>
